@@ -11,8 +11,9 @@ def automate_logbook():
     csv file for later manipulation.
 
     Time Complexity: 
-        - Best:
-        - Worst: 
+        - Best: O(1 + T(sbp) + n + m)
+        - Worst: O(1 + T(sbp) + n + m)
+        where n is the number of rows and m is the number of entries fetched
     """
     #Map of valid boards and the corresponding databases for access
     boardDatabasePath = {
@@ -85,8 +86,9 @@ def load_csv(file_path):
     Load entries from a CSV file.
 
     Time Complexity: 
-        - Best:
-        - Worst:
+        - Best: O(n)
+        - Worst: O(n)
+        where n is the number of rows 
     """
     entries = []
     try:
@@ -105,8 +107,9 @@ def merge_logbooks(local_entries, fetched_entries):
     Merge local and fetched entries, avoiding duplicates and ensuring both local entries are updated to the stored logbook.
 
     Time Complexity: 
-        - Best:
-        - Worst:
+        - Best: O(p + q)
+        - Worst: O(p + q)
+        p is number of local entries and q is the number of fetched entries
     """
     exisitingKeys = set((entry['board'], entry['angle'], entry['climb_name'], entry['date']) for entry in local_entries)
 
@@ -124,8 +127,9 @@ def save_csv(file_path, entries):
     Save entries to a CSV file.
 
     Time Complexity: 
-        - Best:
-        - Worst:
+        - Best: O(r * k)
+        - Worst: O(r * k)
+        where r is the number of rows and k is the number of sets
     """
     if not entries:
         print("No entries to save.")

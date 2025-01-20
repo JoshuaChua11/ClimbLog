@@ -6,8 +6,8 @@ def log():
     climbing gym.
 
     Time Complexity: 
-        - Best:
-        - Worst: 
+        - Best: O(1)
+        - Worst: O(1)
     """
     #Utilises Boardlib csv file for based inputs, basic modfied for standard climbing and defaults are preset
     

@@ -9,8 +9,8 @@ def roi():
     however through further data analysis or other methods a more reasonable approach can be determined. 
 
     Time Complexity: 
-    - 
-    - 
+    - O(n + m log m)
+    where n is the number of entries in the log book and m repreents the valid entries 
     """
     logbookFile = "logbook.csv"
 

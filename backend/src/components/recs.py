@@ -28,12 +28,14 @@ def recs():
     nextGrade = data["nextGrade"]
     predictedDays = data["predictedDays"]
 
+    #send prompt to chatgpt
     prompt = (f"Based on the following climbing improvement data:\n"
               f"Current grade: {currentGrade}\n"
               f"Next target grade: {nextGrade}\n"
               f"Estimated time to achieve next grade: {predictedDays} days\n"
               "Recommend this boulderer a youtube video or an article that for their grade and the next targede can aid in their improvement.")
 
+    #record response 
     try:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
