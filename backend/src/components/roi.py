@@ -90,9 +90,16 @@ def roi():
     if gradeDeltas:
         avgTime = sum(delta[2] / gradesDifficulty[delta[1]] for delta in gradeDeltas) / len(gradeDeltas)
         predDays = math.ceil(avgTime * nextGradeDiff)
-
+        
         print(f"Current Grade: {currentGrade}")
         print(f"Next Target Grade: {nextGrade}")
         print(f"Estimated Time to Reach {nextGrade}: {predDays} days")
+
+        return {
+            "currentGrade": currentGrade,
+            "nextGrade": nextGrade,
+            "predictedDays": predDays
+        }
+
     else:
         print("Not enough data to predict improvement timeline.")

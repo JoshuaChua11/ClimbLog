@@ -1,67 +1,50 @@
-from flask import Flask, jsonify, request
-import pandas as pd
+import openai
+from components import roi
+
+apiKey = None
 
 def recs():
-    app = Flask(__name__)
+    """
+    Utilises ROI function and data gained to prompt chatgpt and return with a recommended video/article based on user's
+    current goal and current climbing grade. 
 
-    # Endpoint to retrieve the logbook
-    @app.route("/logbook", methods=["GET"])
-    def get_logbook():
-        """
-        Fetch the logbook as a JSON response.
-        """
-        try:
-            data = pd.read_csv("logbook.csv").to_dict(orient="records")
-            return jsonify(data)
-        except FileNotFoundError:
-            return jsonify({"error": "Logbook not found"}), 404
+    Time Complexity: 
+    - Best: O(1)
+    - Worst: O(n) where n is the complexity of the response prompt return 
+    """
+    global apiKey
 
-    # Endpoint to get recommendations based on climbing grade
-    @app.route("/recommendations", methods=["GET"])
-    def get_recommendations():
-        """
-        Provides climbing recommendations based on the user's current climbing data.
-        """
-        try:
-            # Load the logbook
-            logbook = pd.read_csv("logbook.csv")
+    if not apiKey:
+        apiKey = input("Please enter your OpenAI API key: ").strip()
+        openai.apiKey = apiKey  
+    
+    data = roi()  
 
-            if logbook.empty:
-                return jsonify({"error": "Logbook is empty. Log some climbs first."}), 400
+    if not data:
+        print("Cannot generate recommendations due to insufficient data.")
+        return
 
-            # Determine the user's highest logged grade
-            grades = {
-                "V0": 1, "V1": 2, "V2": 4, "V3": 8, "V4": 16, "V5": 32,
-                "V6": 64, "V7": 128, "V8": 256, "V9": 512, "V10": 1024,
-                "V11": 2048, "V12": 4096, "V13": 8192, "V14": 16384
-            }
-            logbook['difficulty'] = logbook['logged_grade'].map(grades)
-            max_difficulty = logbook['difficulty'].max()
-            current_grade = logbook.loc[logbook['difficulty'] == max_difficulty, 'logged_grade'].iloc[0]
+    currentGrade = data["currentGrade"]
+    nextGrade = data["nextGrade"]
+    predictedDays = data["predictedDays"]
 
-            # Suggest climbs at the next grade level
-            next_difficulty = max_difficulty * 2
-            next_grade = next((grade for grade, diff in grades.items() if diff == next_difficulty), None)
+    prompt = (f"Based on the following climbing improvement data:\n"
+              f"Current grade: {currentGrade}\n"
+              f"Next target grade: {nextGrade}\n"
+              f"Estimated time to achieve next grade: {predictedDays} days\n"
+              "Recommend this boulderer a youtube video or an article that for their grade and the next targede can aid in their improvement.")
 
-            if not next_grade:
-                return jsonify({"message": "You've reached the highest grade we can recommend. Congratulations!"})
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a climbing coach providing detailed advice."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=500
+        )
+        print(f"\nAI Recommendations:\n{response.choices[0].message['content'].strip()}")
 
-            # Dummy recommendations for demonstration
-            recommendations = [
-                {"board": "kilter", "angle": 45, "climb_name": "Advanced Sloper", "grade": next_grade},
-                {"board": "tension", "angle": 40, "climb_name": "Dynamic Reach", "grade": next_grade},
-            ]
-
-            return jsonify({
-                "current_grade": current_grade,
-                "next_grade": next_grade,
-                "recommendations": recommendations
-            })
-
-        except FileNotFoundError:
-            return jsonify({"error": "Logbook not found"}), 404
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-
-    # Run the Flask app
-    app.run(debug=True, port=5000)
+    except openai.error.AuthenticationError:
+        print("Non-valid/Incorrect Key. Please check your OpenAI API key.")
+        apiKey = None  
